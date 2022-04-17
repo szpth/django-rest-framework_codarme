@@ -5,9 +5,15 @@ from django.db import models
 
 
 class StandardModelMixin(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False, verbose_name="ID")
-    created_at = models.DateTimeField(auto_now_add=True, editable=False, verbose_name="Created at")
-    updated_at = models.DateTimeField(auto_now=True, editable=False, verbose_name="Updated at")
+    uuid = models.UUIDField(
+        primary_key=True, default=uuid4, editable=False, verbose_name="ID"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, editable=False, verbose_name="Created at"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True, editable=False, verbose_name="Updated at"
+    )
 
     class Meta:
         abstract = True
@@ -15,7 +21,9 @@ class StandardModelMixin(models.Model):
 
 class Agendamento(StandardModelMixin):
     data_horario = models.DateTimeField(verbose_name="Horário do agendamento")
-    nome_cliente = models.CharField(max_length=255, verbose_name="Nome do cliente")
+    nome_cliente = models.CharField(
+        max_length=255, verbose_name="Nome do cliente"
+    )
     email_cliente = models.EmailField(verbose_name="E-Mail")
     telefone_cliente = models.CharField(max_length=20, verbose_name="Telefone")
     cancelado = models.BooleanField(default=False, verbose_name="Cancelado")
@@ -25,5 +33,7 @@ class Agendamento(StandardModelMixin):
         # Reference https://github.com/daviddrysdale/python-phonenumbers/tree/dev/python#example-usage
         # Enconding phone to E.164 format
         telefone_cliente = phonenumbers.parse(telefone_cliente, "BR")
-        format_telefone_cliente = phonenumbers.format_number(telefone_cliente, phonenumbers.PhoneNumberFormat.E164)
+        format_telefone_cliente = phonenumbers.format_number(
+            telefone_cliente, phonenumbers.PhoneNumberFormat.E164
+        )
         return format_telefone_cliente

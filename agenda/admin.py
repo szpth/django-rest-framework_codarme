@@ -3,7 +3,6 @@ from django.contrib import admin
 from agenda.models import Agendamento
 
 
-# Register your models here.
 @admin.register(Agendamento)
 class AgendamentoAdmin(admin.ModelAdmin):
     list_display = [

@@ -29,7 +29,7 @@ class Agendamento(StandardModelMixin):
     cancelado = models.BooleanField(default=False, verbose_name="Cancelado")
 
     @classmethod
-    def format_phone(cls, telefone_cliente):
+    def to_e164(cls, telefone_cliente):
         # Reference https://github.com/daviddrysdale/python-phonenumbers/tree/dev/python#example-usage
         # Enconding phone to E.164 format
         telefone_cliente = phonenumbers.parse(telefone_cliente, "BR")

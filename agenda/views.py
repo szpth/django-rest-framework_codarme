@@ -18,7 +18,9 @@ def agendamento_detail(request, uuid):
         return JsonResponse(serializer.data)
 
     if request.method == "PATCH":
-        serializer = AgendamentoSerializer(obj, data=request.data, partial=True)
+        serializer = AgendamentoSerializer(
+            obj, data=request.data, partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(status=201)

@@ -30,9 +30,11 @@ class Agendamento(StandardModelMixin):
 
     @classmethod
     def to_e164(cls, telefone_cliente):
-        """phonenumbers Python Library \n
+        """
+        phonenumbers Python Library \n
         Enconding phone to E.164 format \n
-        Reference: https://github.com/daviddrysdale/python-phonenumbers"""
+        Reference: https://github.com/daviddrysdale/python-phonenumbers
+        """
         telefone_cliente = phonenumbers.parse(telefone_cliente, "BR")
         format_telefone_cliente = phonenumbers.format_number(
             telefone_cliente, phonenumbers.PhoneNumberFormat.E164

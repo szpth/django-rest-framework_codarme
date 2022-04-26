@@ -20,6 +20,12 @@ class StandardModelMixin(models.Model):
 
 
 class Agendamento(StandardModelMixin):
+    prestador = models.ForeignKey(
+        "auth.User",
+        related_name="agendamentos",
+        on_delete=models.CASCADE,
+        verbose_name="Prestador",
+    )
     data_horario = models.DateTimeField(verbose_name="Horário do agendamento")
     nome_cliente = models.CharField(
         max_length=255, verbose_name="Nome do cliente"

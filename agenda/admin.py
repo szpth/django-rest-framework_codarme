@@ -9,6 +9,7 @@ class AgendamentoAdmin(admin.ModelAdmin):
         "uuid",
         "created_at",
         "updated_at",
+        "prestador_id",
         "data_horario",
         "nome_cliente",
         "email_cliente",
@@ -16,8 +17,11 @@ class AgendamentoAdmin(admin.ModelAdmin):
         "cancelado",
     ]
 
-    # define search columns list, then a search box will be added at the top of Department list page.
-    search_fields = ["nome_cliente", "email_cliente", "telefone_cliente"]
+    search_fields = [
+        "nome_cliente",
+        "email_cliente",
+        "telefone_cliente",
+        "prestador_id",
+    ]
 
-    # define filter columns list, then a filter widget will be shown at right side of Department list page.
     list_filter = ["data_horario", "cancelado"]

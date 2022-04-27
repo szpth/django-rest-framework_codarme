@@ -33,6 +33,7 @@ class Agendamento(StandardModelMixin):
     email_cliente = models.EmailField(verbose_name="E-Mail")
     telefone_cliente = models.CharField(max_length=20, verbose_name="Telefone")
     cancelado = models.BooleanField(default=False, verbose_name="Cancelado")
+    confirmado = models.BooleanField(default=False, verbose_name="Confirmado")
 
     @classmethod
     def to_e164(cls, telefone_cliente):

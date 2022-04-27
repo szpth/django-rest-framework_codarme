@@ -15,6 +15,7 @@ class AgendamentoAdmin(admin.ModelAdmin):
         "email_cliente",
         "telefone_cliente",
         "cancelado",
+        "confirmado",
     ]
 
     search_fields = [
@@ -24,4 +25,8 @@ class AgendamentoAdmin(admin.ModelAdmin):
         "prestador_id",
     ]
 
-    list_filter = ["data_horario", "cancelado"]
+    list_filter = [
+        "data_horario",
+        "cancelado",
+        "confirmado",
+    ]

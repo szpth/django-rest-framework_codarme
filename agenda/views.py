@@ -43,33 +43,62 @@ class IsAdminUser(permissions.BasePermission):
         return False
 
 
-class AgendamentoList(APIView):
+class AgendamentoList(generics.ListCreateAPIView):
     permission_classes = [IsOwnerOrCreateOnly]
+    serializer_class = AgendamentoSerializer
 
-    def get(self, request):
-        username = self.request.query_params.get("username", None)
-        queryset = Agendamento.objects.filter(prestador__username=username)
-        serializer = AgendamentoSerializer(queryset, many=True)
-        return JsonResponse(serializer.data, safe=False)
-
-    def post(self, request):
-        data = request.data
-        serializer = AgendamentoSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=201)
-        return JsonResponse(serializer.errors, status=400)
+    def get_queryset(self):
+        confirmado = self.request.query_params.get("confirmado", None)
+        if confirmado == "True" or confirmado == "true":
+            prestador = self.request.query_params.get("username", None)
+            qs_user = Agendamento.objects.filter(
+                prestador__username=prestador,
+                cancelado=False,
+                confirmado=True,
+            ).order_by("data_horario")
+        elif confirmado == "False" or confirmado == "false":
+            prestador = self.request.query_params.get("username", None)
+            qs_user = Agendamento.objects.filter(
+                prestador__username=prestador,
+                cancelado=False,
+                confirmado=False,
+            ).order_by("data_horario")
+        else:
+            prestador = self.request.query_params.get("username", None)
+            qs_user = Agendamento.objects.filter(
+                prestador__username=prestador, cancelado=False
+            ).order_by("data_horario")
+        return qs_user
 
 
 class AgendamentoDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsPrestador]
-    queryset = Agendamento.objects.filter(cancelado=False)
     serializer_class = AgendamentoSerializer
     lookup_field = "uuid"
+    queryset = Agendamento.objects.filter(cancelado=False)
 
     def perform_destroy(self, instance):
         instance.cancelado = True
+        instance.confirmado = False
         instance.save()
+        return Response(status=204)
+
+
+class ConfirmaAgendamentoDetail(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsPrestador]
+    serializer_class = AgendamentoSerializer
+    lookup_field = "uuid"
+    queryset = Agendamento.objects.filter(confirmado=False)
+
+    def post(self, request, **kwargs):
+        username = request.user.username
+        Agendamento.objects.filter(
+            prestador__username=username, confirmado=False
+        ).update(
+            cancelado=False,
+            confirmado=True,
+        )
+        return Response(status=202)
 
 
 class HorarioList(APIView):
@@ -82,13 +111,13 @@ class HorarioList(APIView):
         else:
             data = datetime.fromisoformat(data).date()
         hr_disp = sorted(list(get_hr_disp(data)))
-        return JsonResponse(hr_disp, safe=False)
+        return JsonResponse(data=hr_disp, safe=False)
 
 
-class PrestadorList(APIView):
+class PrestadorList(generics.ListAPIView):
     permission_classes = [IsAdminUser]
+    serializer_class = PrestadorSerializer
 
-    def get(self, request):
-        queryset = User.objects.all()
-        serializer = PrestadorSerializer(queryset, many=True)
-        return JsonResponse(serializer.data, safe=False)
+    def get_queryset(self):
+        qs_prestador = User.objects.all()
+        return qs_prestador

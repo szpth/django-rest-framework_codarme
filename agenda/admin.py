@@ -16,6 +16,7 @@ class AgendamentoAdmin(admin.ModelAdmin):
         "telefone_cliente",
         "cancelado",
         "confirmado",
+        "status",
     ]
 
     search_fields = [
@@ -29,4 +30,5 @@ class AgendamentoAdmin(admin.ModelAdmin):
         "data_horario",
         "cancelado",
         "confirmado",
+        "status",
     ]

@@ -53,21 +53,31 @@ class AgendamentoList(generics.ListCreateAPIView):
             prestador = self.request.query_params.get("username", None)
             qs_user = Agendamento.objects.filter(
                 prestador__username=prestador,
-                cancelado=False,
-                confirmado=True,
-            ).order_by("data_horario")
+                status="CO",
+            ).order_by(
+                "data_horario",
+            )
         elif confirmado == "False" or confirmado == "false":
             prestador = self.request.query_params.get("username", None)
             qs_user = Agendamento.objects.filter(
                 prestador__username=prestador,
-                cancelado=False,
-                confirmado=False,
-            ).order_by("data_horario")
+                status="CA",
+            ).order_by(
+                "data_horario",
+            )
         else:
             prestador = self.request.query_params.get("username", None)
-            qs_user = Agendamento.objects.filter(
-                prestador__username=prestador, cancelado=False
-            ).order_by("data_horario")
+            qs_user = (
+                Agendamento.objects.filter(
+                    prestador__username=prestador,
+                )
+                .exclude(
+                    status="CA",
+                )
+                .order_by(
+                    "data_horario",
+                )
+            )
         return qs_user
 
 
@@ -75,11 +85,12 @@ class AgendamentoDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsPrestador]
     serializer_class = AgendamentoSerializer
     lookup_field = "uuid"
-    queryset = Agendamento.objects.filter(cancelado=False)
+    queryset = Agendamento.objects.exclude(
+        status="CA",
+    )
 
     def perform_destroy(self, instance):
-        instance.cancelado = True
-        instance.confirmado = False
+        instance.status = "CA"
         instance.save()
         return Response(status=204)
 
@@ -88,15 +99,16 @@ class ConfirmaAgendamentoDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [IsPrestador]
     serializer_class = AgendamentoSerializer
     lookup_field = "uuid"
-    queryset = Agendamento.objects.filter(confirmado=False)
+    queryset = Agendamento.objects.exclude(
+        status="CA",
+    )
 
     def post(self, request, **kwargs):
         username = request.user.username
-        Agendamento.objects.filter(
-            prestador__username=username, confirmado=False
+        Agendamento.objects.filter(prestador__username=username,).exclude(
+            status="CA",
         ).update(
-            cancelado=False,
-            confirmado=True,
+            status="CO",
         )
         return Response(status=202)
 

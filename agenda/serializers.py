@@ -17,8 +17,7 @@ class AgendamentoSerializer(serializers.ModelSerializer):
             "email_cliente",
             "telefone_cliente",
             "prestador",
-            "cancelado",
-            "confirmado",
+            "status",
         )
 
     prestador = serializers.CharField()

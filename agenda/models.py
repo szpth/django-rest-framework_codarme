@@ -20,6 +20,17 @@ class StandardModelMixin(models.Model):
 
 
 class Agendamento(StandardModelMixin):
+    NAOCONFIRMADO = "NC"
+    CONFIRMADO = "CO"
+    EXECUTADO = "EX"
+    CANCELADO = "CA"
+    ESTADOS = [
+        (NAOCONFIRMADO, "Não Confirmado"),
+        (CONFIRMADO, "Confirmado"),
+        (EXECUTADO, "Executado"),
+        (CANCELADO, "Cancelado"),
+    ]
+
     prestador = models.ForeignKey(
         "auth.User",
         related_name="agendamentos",
@@ -34,11 +45,17 @@ class Agendamento(StandardModelMixin):
     telefone_cliente = models.CharField(max_length=20, verbose_name="Telefone")
     cancelado = models.BooleanField(default=False, verbose_name="Cancelado")
     confirmado = models.BooleanField(default=False, verbose_name="Confirmado")
+    status = models.CharField(
+        max_length=2,
+        choices=ESTADOS,
+        default=NAOCONFIRMADO,
+        verbose_name="Status",
+    )
 
     @classmethod
     def to_e164(cls, telefone_cliente):
         """phonenumbers Python Library \n
-        Enconding phone to E.164 format \n
+        Encoding phone to E.164 format \n
         Reference: https://github.com/daviddrysdale/python-phonenumbers"""
         telefone_cliente = phonenumbers.parse(telefone_cliente, "BR")
         format_telefone_cliente = phonenumbers.format_number(

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from agenda.models import Agendamento
+from agenda.models import Agendamento, Loyalty
 
 
 @admin.register(Agendamento)
@@ -9,13 +9,11 @@ class AgendamentoAdmin(admin.ModelAdmin):
         "uuid",
         "created_at",
         "updated_at",
-        "prestador_id",
+        "prestador",
         "data_horario",
         "nome_cliente",
         "email_cliente",
         "telefone_cliente",
-        "cancelado",
-        "confirmado",
         "status",
     ]
 
@@ -23,12 +21,30 @@ class AgendamentoAdmin(admin.ModelAdmin):
         "nome_cliente",
         "email_cliente",
         "telefone_cliente",
-        "prestador_id",
+        "prestador",
     ]
 
     list_filter = [
         "data_horario",
-        "cancelado",
-        "confirmado",
         "status",
+    ]
+
+
+@admin.register(Loyalty)
+class LoyaltyAdmin(admin.ModelAdmin):
+    list_display = [
+        "uuid",
+        "created_at",
+        "updated_at",
+        "email_cliente",
+        "prestador",
+        "pontos",
+    ]
+
+    search_fields = [
+        "nome_cliente",
+    ]
+
+    list_filter = [
+        "prestador",
     ]

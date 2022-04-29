@@ -58,8 +58,8 @@ class AgendamentoSerializer(serializers.ModelSerializer):
                 "Não é possível agendar no domingo!"
             )
 
-        filter = Agendamento.objects.filter(data_horario=data_horario).filter(
-            cancelado=False
+        filter = Agendamento.objects.filter(data_horario=data_horario).exclude(
+            status="CA",
         )
 
         if filter.exists():
@@ -70,8 +70,13 @@ class AgendamentoSerializer(serializers.ModelSerializer):
         return data_horario
 
     def validate_telefone_cliente(self, is_e164: str) -> str:
-        """
-        Check if telefone_cliente is E.164 format
+        """Check if telefone_cliente is E.164 format
+
+        Raises:
+            serializers.ValidationError: Return message if is not valid.
+
+        Returns:
+            {boolean}: Return a {boolean} if is valid or not.
         """
         is_e164 = Agendamento.to_e164(is_e164)
 

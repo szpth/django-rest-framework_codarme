@@ -6,13 +6,20 @@ from django.db import models
 
 class StandardModelMixin(models.Model):
     uuid = models.UUIDField(
-        primary_key=True, default=uuid4, editable=False, verbose_name="ID"
+        primary_key=True,
+        default=uuid4,
+        editable=False,
+        verbose_name="ID",
     )
     created_at = models.DateTimeField(
-        auto_now_add=True, editable=False, verbose_name="Created at"
+        auto_now_add=True,
+        editable=False,
+        verbose_name="Created at",
     )
     updated_at = models.DateTimeField(
-        auto_now=True, editable=False, verbose_name="Updated at"
+        auto_now=True,
+        editable=False,
+        verbose_name="Updated at",
     )
 
     class Meta:
@@ -37,14 +44,20 @@ class Agendamento(StandardModelMixin):
         on_delete=models.CASCADE,
         verbose_name="Prestador",
     )
-    data_horario = models.DateTimeField(verbose_name="Horário do agendamento")
-    nome_cliente = models.CharField(
-        max_length=255, verbose_name="Nome do cliente"
+    data_horario = models.DateTimeField(
+        verbose_name="Horário do agendamento",
     )
-    email_cliente = models.EmailField(verbose_name="E-Mail")
-    telefone_cliente = models.CharField(max_length=20, verbose_name="Telefone")
-    cancelado = models.BooleanField(default=False, verbose_name="Cancelado")
-    confirmado = models.BooleanField(default=False, verbose_name="Confirmado")
+    nome_cliente = models.CharField(
+        max_length=255,
+        verbose_name="Nome do cliente",
+    )
+    email_cliente = models.EmailField(
+        verbose_name="E-Mail",
+    )
+    telefone_cliente = models.CharField(
+        max_length=20,
+        verbose_name="Telefone",
+    )
     status = models.CharField(
         max_length=2,
         choices=ESTADOS,
@@ -59,6 +72,23 @@ class Agendamento(StandardModelMixin):
         Reference: https://github.com/daviddrysdale/python-phonenumbers"""
         telefone_cliente = phonenumbers.parse(telefone_cliente, "BR")
         format_telefone_cliente = phonenumbers.format_number(
-            telefone_cliente, phonenumbers.PhoneNumberFormat.E164
+            telefone_cliente,
+            phonenumbers.PhoneNumberFormat.E164,
         )
         return format_telefone_cliente
+
+
+class Loyalty(StandardModelMixin):
+    email_cliente = models.EmailField(
+        verbose_name="E-Mail",
+    )
+    prestador = models.ForeignKey(
+        "auth.User",
+        related_name="loyalty",
+        on_delete=models.CASCADE,
+        verbose_name="Prestador",
+    )
+    pontos = models.IntegerField(
+        "Fidelidade",
+        default=1,
+    )

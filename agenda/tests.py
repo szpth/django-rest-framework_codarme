@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from rest_framework.test import APITestCase
 
-from agenda.models import Agendamento
+from agenda.models import Agendamento, Loyalty
 
 
 class TestListagemAgendamentos(APITestCase):
@@ -106,7 +106,7 @@ class TestDetalhaAgendamento(APITestCase):
             "telefone_cliente": "(11) 99999-9999",
             "prestador": "bob",
         }
-        request = self.client.post(
+        self.client.post(
             path="/api/agendamentos/",
             data=data,
             format="json",
@@ -115,11 +115,79 @@ class TestDetalhaAgendamento(APITestCase):
         user_data = json.loads(user_list.content)
         uuid = user_data[0]["uuid"]
         response = self.client.get(path=f"/api/agendamentos/{uuid}/")
-        assert request.status_code == 201
         assert response.status_code == 200
 
     def test_detalhamento_de_agendamento_nao_autenticado(self):
-        pass
+        User.objects.create_user(
+            email="bob@email.com", username="bob", password="123"
+        )
+        self.client.login(username="bob", password="123")
+        data = {
+            "data_horario": "2022-06-15T11:30:00Z",
+            "nome_cliente": "Teste",
+            "email_cliente": "teste@teste.com",
+            "telefone_cliente": "(11) 99999-9999",
+            "prestador": "bob",
+        }
+        self.client.post(
+            path="/api/agendamentos/",
+            data=data,
+            format="json",
+        )
+        user_list = self.client.get(
+            path=f"/api/agendamentos/?username={data['prestador']}"
+        )
+        user_data = json.loads(user_list.content)
+        uuid = user_data[0]["uuid"]
+        self.client.logout()
+        response = self.client.get(path=f"/api/agendamentos/{uuid}/")
+        assert response.status_code == 403
+
+    def test_detalhamento_de_agendamento_finalizar(self):
+        user = User.objects.create(
+            email="bob@email.com", username="bob", password="123"
+        )
+        self.client.force_authenticate(user)
+        data = {
+            "data_horario": "2022-06-15T11:30:00Z",
+            "nome_cliente": "Teste",
+            "email_cliente": "teste@teste.com",
+            "telefone_cliente": "(11) 99999-9999",
+            "prestador": "bob",
+        }
+        self.client.post(
+            path="/api/agendamentos/",
+            data=data,
+            format="json",
+        )
+        user_list = self.client.get(path="/api/agendamentos/?username=bob")
+        user_data = json.loads(user_list.content)
+        uuid = user_data[0]["uuid"]
+        response = self.client.get(path=f"/api/agendamentos/{uuid}/")
+        uuid = response.data["uuid"]
+
+        qs = Agendamento.objects.get(uuid__exact=uuid)
+
+        obj = Loyalty.objects.filter(
+            email_cliente=qs.email_cliente, prestador=qs.prestador
+        )
+
+        if obj.exists():
+            obj.pontos += 1
+            obj.save()
+        else:
+            Loyalty.objects.create(
+                email_cliente=qs.email_cliente, prestador=qs.prestador
+            )
+
+        obj2 = Loyalty.objects.get(
+            email_cliente=qs.email_cliente, prestador=qs.prestador
+        )
+
+        obj.pontos += 1
+        obj.save()
+
+        assert obj2.pontos == 2
 
 
 class TestListagemPrestadores(APITestCase):
@@ -151,6 +219,15 @@ class TestListagemPrestadores(APITestCase):
         assert data == {
             "detail": "Authentication credentials were not provided."
         }
-        # assert data == {
-        #     "detail": "You do not have permission to perform this action."
-        # }
+
+    def test_listagem_prestadores_nao_autorizado(self):
+        user = User.objects.create(
+            email="bob@email.com", username="bob", password="123"
+        )
+        self.client.force_authenticate(user)
+        response = self.client.get(path="/api/prestadores/")
+        data = json.loads(response.content)
+        assert response.status_code == 403
+        assert data == {
+            "detail": "You do not have permission to perform this action."
+        }

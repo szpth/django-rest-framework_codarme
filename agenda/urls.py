@@ -4,6 +4,7 @@ from agenda.views import (
     AgendamentoDetail,
     AgendamentoList,
     ConfirmaAgendamentoDetail,
+    FinalizaAgendamentoDetail,
     HorarioList,
     PrestadorList,
 )
@@ -14,6 +15,10 @@ urlpatterns = [
     path(
         "agendamentos/<uuid:uuid>/confirmar/",
         ConfirmaAgendamentoDetail.as_view(),
+    ),
+    path(
+        "agendamentos/<uuid:uuid>/finalizar/",
+        FinalizaAgendamentoDetail.as_view(),
     ),
     path("horarios/", HorarioList.as_view()),
     path("prestadores/", PrestadorList.as_view()),

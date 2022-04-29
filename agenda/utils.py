@@ -7,12 +7,18 @@ from agenda.models import Agendamento
 
 def get_hr_disp(data) -> list:
     """
-    Retorna uma lista de horários disponíveis para agendamento.
+    Returns a list of available times for scheduling.
+
+    Raises:
+        JsonResponse: Returns a message if it is pointed to a Sunday.
+
+    Returns:
+        {list}: Return a {list} with avaliable schedule.
     """
     dt_tz = datetime(data.year, data.month, data.day, tzinfo=timezone.utc)
     filter = list(
-        Agendamento.objects.filter(data_horario__date=dt_tz).filter(
-            cancelado=False
+        Agendamento.objects.filter(data_horario__date=dt_tz,).filter(
+            status="CA",
         )
     )
     horarios = []

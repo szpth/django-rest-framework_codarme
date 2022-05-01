@@ -31,9 +31,7 @@ class AgendamentoSerializer(serializers.ModelSerializer):
             )
         return prestador_obj
 
-    def validate_data_horario(
-        self, data_horario: timezone.datetime
-    ) -> timezone.datetime:
+    def validate_data_horario(self, data_horario):
         """
         Check if data_horario is in the past
         """
@@ -56,15 +54,6 @@ class AgendamentoSerializer(serializers.ModelSerializer):
         if data_horario.weekday() == 6:
             raise serializers.ValidationError(
                 "Não é possível agendar no domingo!"
-            )
-
-        filter = Agendamento.objects.filter(data_horario=data_horario).exclude(
-            status="CA",
-        )
-
-        if filter.exists():
-            raise serializers.ValidationError(
-                "Agendamento já existente para este horário!"
             )
 
         return data_horario

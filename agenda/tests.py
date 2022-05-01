@@ -16,7 +16,7 @@ class TestListagemAgendamentos(APITestCase):
         self.client.force_authenticate(user)
         response = self.client.get(path="/api/agendamentos/?username=bob")
         data = json.loads(response.content)
-        assert data == []
+        self.assertListEqual(data, [])
 
     def test_listagem_agendamentos_criados(self):
         user = User.objects.create(
@@ -32,12 +32,8 @@ class TestListagemAgendamentos(APITestCase):
         )
         response = self.client.get(path="/api/agendamentos/?username=bob")
         data = json.loads(response.content)
-        assert data[0]["data_horario"] == "2022-04-26T11:30:00Z"
-        assert data[0]["nome_cliente"] == "Teste"
-        assert data[0]["email_cliente"] == "teste@teste.com"
-        assert data[0]["telefone_cliente"] == "(11) 99999-9999"
-        assert data[0]["prestador"] == "bob"
-        assert response.status_code == 200
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data[0]["prestador"], "bob")
 
     def test_listagem_agendamentos_nao_autenticado(self):
         pass
@@ -78,9 +74,10 @@ class TestCriaAgendamentos(APITestCase):
             format="json",
         )
         created = Agendamento.objects.get()
-        assert response.status_code == 201
-        assert created.data_horario == datetime(
-            2022, 6, 15, 11, 0, tzinfo=timezone.utc
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(
+            created.data_horario,
+            datetime(2022, 6, 15, 11, 0, tzinfo=timezone.utc),
         )
 
     def test_cria_agendamento_passado(self):
@@ -115,7 +112,7 @@ class TestDetalhaAgendamento(APITestCase):
         user_data = json.loads(user_list.content)
         uuid = user_data[0]["uuid"]
         response = self.client.get(path=f"/api/agendamentos/{uuid}/")
-        assert response.status_code == 200
+        self.assertEqual(response.status_code, 200)
 
     def test_detalhamento_de_agendamento_nao_autenticado(self):
         User.objects.create_user(
@@ -141,7 +138,7 @@ class TestDetalhaAgendamento(APITestCase):
         uuid = user_data[0]["uuid"]
         self.client.logout()
         response = self.client.get(path=f"/api/agendamentos/{uuid}/")
-        assert response.status_code == 403
+        self.assertEqual(response.status_code, 403)
 
     def test_detalhamento_de_agendamento_finalizar(self):
         user = User.objects.create(
@@ -160,34 +157,22 @@ class TestDetalhaAgendamento(APITestCase):
             data=data,
             format="json",
         )
-        user_list = self.client.get(path="/api/agendamentos/?username=bob")
-        user_data = json.loads(user_list.content)
-        uuid = user_data[0]["uuid"]
-        response = self.client.get(path=f"/api/agendamentos/{uuid}/")
-        uuid = response.data["uuid"]
 
-        qs = Agendamento.objects.get(uuid__exact=uuid)
-
-        obj = Loyalty.objects.filter(
-            email_cliente=qs.email_cliente, prestador=qs.prestador
+        _obj = Loyalty.objects.filter(
+            email_cliente=data["email_cliente"], prestador=user
         )
 
-        if obj.exists():
-            obj.pontos += 1
-            obj.save()
+        if _obj.exists():
+            _obj = _obj[0]
+            _obj.pontos += 1
+            _obj.save()
         else:
             Loyalty.objects.create(
-                email_cliente=qs.email_cliente, prestador=qs.prestador
+                email_cliente=data["email_cliente"],
+                prestador=user,
             )
 
-        obj2 = Loyalty.objects.get(
-            email_cliente=qs.email_cliente, prestador=qs.prestador
-        )
-
-        obj.pontos += 1
-        obj.save()
-
-        assert obj2.pontos == 2
+        self.assertEqual(_obj[0].pontos, 1)
 
 
 class TestListagemPrestadores(APITestCase):
@@ -209,25 +194,29 @@ class TestListagemPrestadores(APITestCase):
             format="json",
         )
         response = self.client.get(path="/api/prestadores/")
-        assert request.status_code == 201
-        assert response.status_code == 200
+        self.assertEqual(request.status_code, 201)
+        self.assertEqual(response.status_code, 200)
 
     def test_listagem_prestadores_nao_autenticado(self):
-        response = self.client.get(path="/api/prestadores/")
-        data = json.loads(response.content)
-        assert response.status_code == 403
-        assert data == {
-            "detail": "Authentication credentials were not provided."
+        request = self.client.get(path="/api/prestadores/")
+        data = request.content
+        json_in = {
+            "detail": "Authentication credentials were not provided.",
         }
+        response = json.dumps(json_in)
+        self.assertEqual(request.status_code, 403)
+        self.assertJSONEqual(data, response)
 
     def test_listagem_prestadores_nao_autorizado(self):
         user = User.objects.create(
             email="bob@email.com", username="bob", password="123"
         )
         self.client.force_authenticate(user)
-        response = self.client.get(path="/api/prestadores/")
-        data = json.loads(response.content)
-        assert response.status_code == 403
-        assert data == {
-            "detail": "You do not have permission to perform this action."
+        request = self.client.get(path="/api/prestadores/")
+        data = request.content
+        json_in = {
+            "detail": "You do not have permission to perform this action.",
         }
+        response = json.dumps(json_in)
+        self.assertEqual(request.status_code, 403)
+        self.assertJSONEqual(data, response)

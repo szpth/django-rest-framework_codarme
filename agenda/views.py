@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -83,34 +83,24 @@ class AgendamentoDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsPrestador]
     serializer_class = AgendamentoSerializer
     lookup_field = "uuid"
-    queryset = Agendamento.objects.exclude(
-        status="CA",
-    )
-
-    def post(self, request, uuid):
-        qs = Agendamento.objects.get(
-            uuid=uuid,
-        )
-
-        obj = Loyalty.objects.filter(
-            email_cliente=qs.email_cliente,
-            prestador=qs.prestador,
-        )
-
-        if obj.exists():
-            obj.pontos += 1
-            obj.save()
-        else:
-            Loyalty.objects.create(
-                email_cliente=qs.email_cliente,
-                prestador=qs.prestador,
-            )
-
-        return Response(status=200)
+    queryset = Agendamento.objects.all()
 
     def perform_destroy(self, instance):
-        instance.status = "CA"
-        instance.save()
+        if instance.status == "CA":
+            raise serializers.ValidationError(
+                {
+                    "detail": "Agendamento já foi cancelado!",
+                }
+            )
+        elif instance.status == "EX":
+            raise serializers.ValidationError(
+                {
+                    "detail": "Agendamento já foi finalizado!",
+                }
+            )
+        else:
+            instance.status = "CA"
+            instance.save()
         return Response(status=204)
 
 
@@ -119,15 +109,32 @@ class ConfirmaAgendamentoDetail(generics.RetrieveAPIView):
     serializer_class = AgendamentoSerializer
     lookup_field = "uuid"
 
-    def post(self, request, **kwargs):
-        username = request.user.username
+    def post(self, request, uuid):
+        _qs = Agendamento.objects.get(
+            uuid=uuid,
+        )
 
-        Agendamento.objects.filter(
-            prestador__username=username,
-            status="NC",
-        ).update(
+        _obj = Agendamento.objects.filter(
+            data_horario=_qs.data_horario,
+            prestador=_qs.prestador,
             status="CO",
         )
+
+        if _obj.exists():
+            raise serializers.ValidationError(
+                "Agendamento confirmado já existente para este horário!"
+            )
+        elif _qs.status == "CA":
+            raise serializers.ValidationError(
+                "Este agendamento já está cancelado!"
+            )
+        elif _qs.status == "CO":
+            raise serializers.ValidationError(
+                "Este agendamento já está confirmado!"
+            )
+        else:
+            _qs.status = "CO"
+            _qs.save()
 
         return Response(status=202)
 
@@ -137,14 +144,47 @@ class FinalizaAgendamentoDetail(generics.UpdateAPIView):
     serializer_class = AgendamentoSerializer
     lookup_field = "uuid"
 
-    def post(self, request, **kwargs):
-        username = request.user.username
-
-        Agendamento.objects.filter(
-            prestador__username=username, status="CO"
-        ).update(
-            status="EX",
+    def post(self, request, uuid):
+        _qs = Agendamento.objects.get(
+            uuid=uuid,
         )
+
+        _obj = Loyalty.objects.filter(
+            email_cliente=_qs.email_cliente,
+            prestador=_qs.prestador,
+        )
+
+        if _qs.status == "EX":
+            raise serializers.ValidationError(
+                {
+                    "detail": "Agendamento já foi finalizado!",
+                }
+            )
+        elif _qs.status == "CA":
+            raise serializers.ValidationError(
+                {
+                    "detail": "Agendamento está cancelado!",
+                },
+            )
+        elif _qs.status == "NC":
+            raise serializers.ValidationError(
+                {
+                    "detail": "Agendamento ainda não foi confirmado!",
+                }
+            )
+        else:
+            if _qs.status == "CO":
+                _qs.status = "EX"
+                _qs.save()
+                if _obj.exists():
+                    _obj = _obj[0]
+                    _obj.pontos += 1
+                    _obj.save()
+                else:
+                    Loyalty.objects.create(
+                        email_cliente=_qs.email_cliente,
+                        prestador=_qs.prestador,
+                    )
 
         return Response(status=202)
 

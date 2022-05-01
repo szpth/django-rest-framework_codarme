@@ -17,8 +17,8 @@ def get_hr_disp(data) -> list:
     """
     dt_tz = datetime(data.year, data.month, data.day, tzinfo=timezone.utc)
     filter = list(
-        Agendamento.objects.filter(data_horario__date=dt_tz,).filter(
-            status="CA",
+        Agendamento.objects.filter(data_horario__date=dt_tz,).exclude(
+            status="CO",
         )
     )
     horarios = []

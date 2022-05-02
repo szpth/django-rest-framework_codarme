@@ -7,7 +7,7 @@ from django.conf import settings
 
 def is_feriado(date: date):
     if settings.TESTING is True:
-        if date.day == 1 and date.month == 12:
+        if date.day == 25 and date.month == 12:
             return True
         return False
 
@@ -20,5 +20,4 @@ def is_feriado(date: date):
         dt_as_str = feriado["date"]
         if datetime.strptime(dt_as_str, "%Y-%m-%d").date() == date:
             return True
-
     return False

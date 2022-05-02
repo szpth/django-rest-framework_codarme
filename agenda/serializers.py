@@ -4,8 +4,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from rest_framework import serializers
 
-from agenda import utils
 from agenda.models import Agendamento
+from agenda.utils import get_hr_disp
 
 
 class AgendamentoSerializer(serializers.ModelSerializer):
@@ -35,6 +35,20 @@ class AgendamentoSerializer(serializers.ModelSerializer):
         return prestador_obj
 
     def validate_data_horario(self, value):
+        if value.weekday() == 6:
+            raise serializers.ValidationError(
+                {
+                    "detail": "Não é possível agendar no domingo!",
+                }
+            )
+
+        if get_hr_disp(value) == []:
+            raise serializers.ValidationError(
+                {
+                    "detail": "Não há horários disponíveis!",
+                }
+            )
+
         if value < timezone.now():
             raise serializers.ValidationError(
                 {
@@ -56,20 +70,6 @@ class AgendamentoSerializer(serializers.ModelSerializer):
                         "detail": "Agendamento fora do horário de funcionamento!",
                     }
                 )
-
-        if value.weekday() == 6:
-            raise serializers.ValidationError(
-                {
-                    "detail": "Não é possível agendar no domingo!",
-                }
-            )
-
-        if value in utils.get_hr_disp(value.date()):
-            raise serializers.ValidationError(
-                {
-                    "detail": "Esse horário não está disponível!",
-                }
-            )
 
         return value
 

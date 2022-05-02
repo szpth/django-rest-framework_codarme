@@ -17,7 +17,7 @@ class TestListagemAgendamentos(APITestCase):
         self.client.force_authenticate(user)
         response = self.client.get(path="/api/agendamentos/?username=bob")
         data = json.loads(response.content)
-        self.assertListEqual(data, [])
+        assert data == []
 
     def test_listagem_agendamentos_criados(self):
         user = User.objects.create(
@@ -33,8 +33,8 @@ class TestListagemAgendamentos(APITestCase):
         )
         response = self.client.get(path="/api/agendamentos/?username=bob")
         data = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data[0]["prestador"], "bob")
+        assert response.status_code == 200
+        assert data[0]["prestador"] == "bob"
 
     def test_listagem_agendamentos_nao_autenticado(self):
         pass
@@ -74,9 +74,8 @@ class TestCriaAgendamentos(APITestCase):
             format="json",
         )
         response = Agendamento.objects.get()
-        self.assertEqual(
-            response.data_horario,
-            datetime(2022, 12, 1, 11, 0, tzinfo=timezone.utc),
+        assert response.data_horario == datetime(
+            2022, 12, 1, 11, 0, tzinfo=timezone.utc
         )
 
     @mock.patch("agenda.libs.brasil_api.is_feriado", return_value=True)
@@ -85,7 +84,7 @@ class TestCriaAgendamentos(APITestCase):
             email="bob@email.com", username="bob", password="123"
         )
         data = {
-            "data_horario": "2022-12-01T11:00:00Z",
+            "data_horario": "2023-12-25T11:00:00Z",
             "nome_cliente": "Teste",
             "email_cliente": "teste@teste.com",
             "telefone_cliente": "(11) 99999-9999",
@@ -96,13 +95,14 @@ class TestCriaAgendamentos(APITestCase):
             data=data,
             format="json",
         )
-        data = response.content
+        data = json.loads(response.content)
         json_in = {
-            "detail": "Esse horário não está disponível!",
+            "data_horario": {
+                "detail": "Não há horários disponíveis!",
+            }
         }
-        message = json.dumps(json_in)
-        self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(data, message)
+        assert response.status_code == 400
+        assert data == json_in
 
     def test_cria_agendamento_passado(self):
         pass
@@ -136,7 +136,7 @@ class TestDetalhaAgendamento(APITestCase):
         user_data = json.loads(user_list.content)
         uuid = user_data[0]["uuid"]
         response = self.client.get(path=f"/api/agendamentos/{uuid}/")
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
 
     def test_detalhamento_de_agendamento_nao_autenticado(self):
         User.objects.create_user(
@@ -162,7 +162,7 @@ class TestDetalhaAgendamento(APITestCase):
         uuid = user_data[0]["uuid"]
         self.client.logout()
         response = self.client.get(path=f"/api/agendamentos/{uuid}/")
-        self.assertEqual(response.status_code, 403)
+        assert response.status_code == 403
 
     def test_detalhamento_de_agendamento_finalizar(self):
         user = User.objects.create(
@@ -196,7 +196,7 @@ class TestDetalhaAgendamento(APITestCase):
                 prestador=user,
             )
 
-        self.assertEqual(_obj[0].pontos, 1)
+        assert _obj[0].pontos == 1
 
 
 class TestListagemPrestadores(APITestCase):
@@ -218,32 +218,30 @@ class TestListagemPrestadores(APITestCase):
             format="json",
         )
         response = self.client.get(path="/api/prestadores/")
-        self.assertEqual(request.status_code, 201)
-        self.assertEqual(response.status_code, 200)
+        assert request.status_code == 201
+        assert response.status_code == 200
 
     def test_listagem_prestadores_nao_autenticado(self):
-        request = self.client.get(path="/api/prestadores/")
-        data = request.content
+        response = self.client.get(path="/api/prestadores/")
         json_in = {
             "detail": "Authentication credentials were not provided.",
         }
-        response = json.dumps(json_in)
-        self.assertEqual(request.status_code, 403)
-        self.assertJSONEqual(data, response)
+        data = json.loads(response.content)
+        assert response.status_code == 403
+        assert data == json_in
 
     def test_listagem_prestadores_nao_autorizado(self):
         user = User.objects.create(
             email="bob@email.com", username="bob", password="123"
         )
         self.client.force_authenticate(user)
-        request = self.client.get(path="/api/prestadores/")
-        data = request.content
+        response = self.client.get(path="/api/prestadores/")
         json_in = {
-            "detail": "You do not have permission to perform this action.",
+            "detail": "You do not have permission to perform this action."
         }
-        response = json.dumps(json_in)
-        self.assertEqual(request.status_code, 403)
-        self.assertJSONEqual(data, response)
+        data = json.loads(response.content)
+        assert response.status_code, 403
+        assert data == json_in
 
 
 class TestListagemHorarios(APITestCase):
@@ -251,4 +249,4 @@ class TestListagemHorarios(APITestCase):
     def test_listagem_horarios_disponiveis_em_feriados(self, _):
         response = self.client.get(path="/api/horarios/?data=2022-12-25")
         data = json.loads(response.content)
-        self.assertEqual(data, [])
+        assert data == []

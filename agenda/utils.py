@@ -12,7 +12,7 @@ def get_hr_disp(data: date) -> Iterable[datetime]:
     Returns a list of available times for scheduling.
 
     Raises:
-        JsonResponse: Returns a message if it is pointed to a Sunday.
+        JsonResponse: Returns a message if it is pointed to a Sunday or Holiday.
 
     Returns:
         {list}: Return a {list} with avaliable schedule.
@@ -26,7 +26,9 @@ def get_hr_disp(data: date) -> Iterable[datetime]:
             status="CO",
         )
     )
+
     horarios = []
+
     if dt_tz.weekday() == 6:
         return JsonResponse(
             {"response": "Não é possível agendar no domingo!"}, status=400

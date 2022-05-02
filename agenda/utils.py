@@ -1,11 +1,13 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
+from typing import Iterable
 
 from django.http import JsonResponse
 
+from agenda.libs import brasil_api
 from agenda.models import Agendamento
 
 
-def get_hr_disp(data) -> list:
+def get_hr_disp(data: date) -> Iterable[datetime]:
     """
     Returns a list of available times for scheduling.
 
@@ -15,6 +17,9 @@ def get_hr_disp(data) -> list:
     Returns:
         {list}: Return a {list} with avaliable schedule.
     """
+    if brasil_api.is_feriado(data):
+        return []
+
     dt_tz = datetime(data.year, data.month, data.day, tzinfo=timezone.utc)
     filter = list(
         Agendamento.objects.filter(data_horario__date=dt_tz,).exclude(

@@ -6,7 +6,7 @@ from django.conf import settings
 
 
 def is_feriado(date: date):
-    if settings.TESTING is True:
+    if settings.DEBUG is True:
         if date.day == 25 and date.month == 12:
             return True
         return False

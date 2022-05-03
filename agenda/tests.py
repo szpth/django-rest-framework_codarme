@@ -6,7 +6,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from rest_framework.test import APITestCase
 
-from agenda.models import Agendamento, Loyalty
+from agenda.models.agenda import Agendamento
+from agenda.models.loyalty import Loyalty
 
 
 class TestListagemAgendamentos(APITestCase):

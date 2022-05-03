@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from agenda.models import Agendamento, Loyalty
+from agenda.models.agenda import Agendamento
+from agenda.models.loyalty import Loyalty
 
 
 @admin.register(Agendamento)

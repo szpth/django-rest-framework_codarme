@@ -6,7 +6,8 @@ from rest_framework import generics, permissions, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from agenda.models import Agendamento, Loyalty
+from agenda.models.agenda import Agendamento
+from agenda.models.loyalty import Loyalty
 from agenda.serializers import AgendamentoSerializer, PrestadorSerializer
 from agenda.utils import get_hr_disp
 

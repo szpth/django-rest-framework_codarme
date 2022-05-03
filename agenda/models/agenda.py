@@ -1,29 +1,7 @@
-from uuid import uuid4
-
 import phonenumbers
 from django.db import models
 
-
-class StandardModelMixin(models.Model):
-    uuid = models.UUIDField(
-        primary_key=True,
-        default=uuid4,
-        editable=False,
-        verbose_name="ID",
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        editable=False,
-        verbose_name="Created at",
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        editable=False,
-        verbose_name="Updated at",
-    )
-
-    class Meta:
-        abstract = True
+from agenda.models.base import StandardModelMixin
 
 
 class Agendamento(StandardModelMixin):
@@ -76,19 +54,3 @@ class Agendamento(StandardModelMixin):
             phonenumbers.PhoneNumberFormat.E164,
         )
         return format_telefone_cliente
-
-
-class Loyalty(StandardModelMixin):
-    email_cliente = models.EmailField(
-        verbose_name="E-Mail",
-    )
-    prestador = models.ForeignKey(
-        "auth.User",
-        related_name="loyalty",
-        on_delete=models.CASCADE,
-        verbose_name="Prestador",
-    )
-    pontos = models.IntegerField(
-        "Fidelidade",
-        default=1,
-    )

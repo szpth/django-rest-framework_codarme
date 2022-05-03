@@ -4,7 +4,7 @@ from typing import Iterable
 from django.http import JsonResponse
 
 from agenda.libs import brasil_api
-from agenda.models import Agendamento
+from agenda.models.agenda import Agendamento
 
 
 def get_hr_disp(data: date) -> Iterable[datetime]:

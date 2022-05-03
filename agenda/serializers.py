@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from rest_framework import serializers
 
-from agenda.models import Agendamento
+from agenda.models.agenda import Agendamento
 from agenda.utils import get_hr_disp
 
 

@@ -1,0 +1,36 @@
+2022-05-03 23:32:45,196 root         INFO     Querying on BrasilAPI: 2022-12-01T11:00:00+00:00
+2022-05-03 23:32:45,197 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:45,230 root         INFO     Querying on BrasilAPI: 2023-12-25T11:00:00+00:00
+2022-05-03 23:32:45,230 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:45,233 django.request WARNING  Bad Request: /api/agendamentos/
+2022-05-03 23:32:45,256 root         INFO     Querying on BrasilAPI: 2022-06-15T11:30:00+00:00
+2022-05-03 23:32:45,256 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:45,281 root         INFO     Querying on BrasilAPI: 2022-06-15T11:30:00+00:00
+2022-05-03 23:32:45,285 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:45,670 root         INFO     Querying on BrasilAPI: 2022-06-15T11:30:00+00:00
+2022-05-03 23:32:45,671 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:45,683 django.request WARNING  Forbidden: /api/agendamentos/ce3c0b19-9376-44b7-a51d-8491acfa3d61/
+2022-05-03 23:32:45,727 root         INFO     Querying on BrasilAPI: 2022-12-25
+2022-05-03 23:32:45,728 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:45,896 root         INFO     Querying on BrasilAPI: 2022-06-15T11:30:00+00:00
+2022-05-03 23:32:45,896 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:45,907 django.request WARNING  Forbidden: /api/prestadores/
+2022-05-03 23:32:45,913 django.request WARNING  Forbidden: /api/prestadores/
+2022-05-03 23:32:53,531 root         INFO     Querying on BrasilAPI: 2022-12-01T11:00:00+00:00
+2022-05-03 23:32:53,532 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:53,563 root         INFO     Querying on BrasilAPI: 2023-12-25T11:00:00+00:00
+2022-05-03 23:32:53,563 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:53,565 django.request WARNING  Bad Request: /api/agendamentos/
+2022-05-03 23:32:53,579 root         INFO     Querying on BrasilAPI: 2022-06-15T11:30:00+00:00
+2022-05-03 23:32:53,579 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:53,598 root         INFO     Querying on BrasilAPI: 2022-06-15T11:30:00+00:00
+2022-05-03 23:32:53,598 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:53,943 root         INFO     Querying on BrasilAPI: 2022-06-15T11:30:00+00:00
+2022-05-03 23:32:53,943 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:53,954 django.request WARNING  Forbidden: /api/agendamentos/a386e490-7207-4dba-a4af-04655c9e6a72/
+2022-05-03 23:32:53,999 root         INFO     Querying on BrasilAPI: 2022-12-25
+2022-05-03 23:32:54,000 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:54,178 root         INFO     Querying on BrasilAPI: 2022-06-15T11:30:00+00:00
+2022-05-03 23:32:54,178 root         INFO     Request is not being performed, DEBUG mode active.
+2022-05-03 23:32:54,190 django.request WARNING  Forbidden: /api/prestadores/
+2022-05-03 23:32:54,198 django.request WARNING  Forbidden: /api/prestadores/

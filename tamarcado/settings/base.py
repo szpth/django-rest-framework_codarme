@@ -33,7 +33,6 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "rest_framework",
     "agenda",
-    "agenda.apps.AgendaConfig",
 ]
 
 MIDDLEWARE = [

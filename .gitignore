@@ -12,6 +12,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Logs file
+logs/
+.logs
+
 # C extensions
 *.so
 

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from django.contrib.auth.models import User
@@ -8,7 +9,12 @@ from rest_framework.views import APIView
 
 from agenda.models.agenda import Agendamento
 from agenda.models.loyalty import Loyalty
-from agenda.serializers import AgendamentoSerializer, PrestadorSerializer
+from agenda.models.prestador import Endereco
+from agenda.serializers import (
+    AgendamentoSerializer,
+    EnderecoSerializer,
+    PrestadorSerializer,
+)
 from agenda.utils import get_hr_disp
 
 
@@ -45,8 +51,8 @@ class IsAdminUser(permissions.BasePermission):
 
 
 class AgendamentoList(generics.ListCreateAPIView):
-    permission_classes = [IsOwnerOrCreateOnly]
     serializer_class = AgendamentoSerializer
+    permission_classes = [IsOwnerOrCreateOnly]
 
     def get_queryset(self):
         confirmado = self.request.query_params.get("confirmado", None)
@@ -81,8 +87,8 @@ class AgendamentoList(generics.ListCreateAPIView):
 
 
 class AgendamentoDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsPrestador]
     serializer_class = AgendamentoSerializer
+    permission_classes = [IsPrestador]
     lookup_field = "uuid"
     queryset = Agendamento.objects.all()
 
@@ -106,8 +112,8 @@ class AgendamentoDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ConfirmaAgendamentoDetail(generics.RetrieveAPIView):
-    permission_classes = [IsPrestador]
     serializer_class = AgendamentoSerializer
+    permission_classes = [IsPrestador]
     lookup_field = "uuid"
 
     def post(self, request, uuid):
@@ -141,8 +147,8 @@ class ConfirmaAgendamentoDetail(generics.RetrieveAPIView):
 
 
 class FinalizaAgendamentoDetail(generics.UpdateAPIView):
-    permission_classes = [IsPrestador]
     serializer_class = AgendamentoSerializer
+    permission_classes = [IsPrestador]
     lookup_field = "uuid"
 
     def post(self, request, uuid):
@@ -210,3 +216,9 @@ class PrestadorList(generics.ListAPIView):
     def get_queryset(self):
         qs_prestador = User.objects.all()
         return qs_prestador
+
+
+class EnderecoDetail(generics.CreateAPIView):
+    serializer_class = EnderecoSerializer
+    print(serializer_class)
+    permission_classes = [IsPrestador]

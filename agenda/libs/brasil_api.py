@@ -30,3 +30,15 @@ def is_feriado(date: date):
             return True
     logging.error("The given date is not a holiday!")
     return False
+
+
+def get_cep(cep: str):
+    logging.info(f"Querying on BrasilAPI: {cep}")
+    r = requests.get(f"https://brasilapi.com.br/api/cep/v1/{cep}")
+    if r.status_code != 200:
+        logging.error(
+            "Request is not being performed, ERROR when consulting BrasilAPI!"
+        )
+        return False
+    endereco = r.json()
+    return endereco

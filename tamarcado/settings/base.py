@@ -130,7 +130,7 @@ try:
 except OSError:
     pass
 today = datetime.now()
-log_name = today.strftime("%Y%m%d_%H")
+log_name = today.strftime("%Y%m%d")
 
 LOGGING = {  # DictConfig schema: https://docs.python.org/3/library/logging.config.html#configuration-dictionary-schema
     "version": 1,  # Versão do schema atual

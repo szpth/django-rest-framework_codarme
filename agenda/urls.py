@@ -1,9 +1,13 @@
 from django.urls import path
+from rest_framework.views import APIView
 
+from agenda.models.prestador import Endereco
+from agenda.serializers import EnderecoSerializer
 from agenda.views import (
     AgendamentoDetail,
     AgendamentoList,
     ConfirmaAgendamentoDetail,
+    EnderecoDetail,
     FinalizaAgendamentoDetail,
     HorarioList,
     PrestadorList,
@@ -22,4 +26,5 @@ urlpatterns = [
     ),
     path("horarios/", HorarioList.as_view()),
     path("prestadores/", PrestadorList.as_view()),
+    path("prestadores/endereco/", EnderecoDetail.as_view()),
 ]

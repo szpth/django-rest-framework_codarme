@@ -50,7 +50,7 @@ class TestCriaAgendamentos(APITestCase):
         data = json.loads(response.content)
         json_in = {
             "data_horario": {
-                "detail": "Não há horários disponíveis!",
+                "detail": "No times available!",
             }
         }
         assert response.status_code == 400

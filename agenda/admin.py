@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from agenda.models.agenda import Agendamento
 from agenda.models.loyalty import Loyalty
+from agenda.models.prestador import Endereco
 
 
 @admin.register(Agendamento)
@@ -48,4 +49,28 @@ class LoyaltyAdmin(admin.ModelAdmin):
 
     list_filter = [
         "prestador",
+    ]
+
+
+@admin.register(Endereco)
+class EnderecoAdmin(admin.ModelAdmin):
+    list_display = [
+        "uuid",
+        "created_at",
+        "updated_at",
+        "prestador",
+        "cep",
+        "estado",
+        "cidade",
+        "bairro",
+        "rua",
+        "complemento",
+    ]
+
+    search_fields = [
+        "prestador",
+    ]
+
+    list_filter = [
+        "estado",
     ]

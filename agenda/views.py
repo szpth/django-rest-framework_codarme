@@ -220,5 +220,4 @@ class PrestadorList(generics.ListAPIView):
 
 class EnderecoDetail(generics.CreateAPIView):
     serializer_class = EnderecoSerializer
-    print(serializer_class)
     permission_classes = [IsPrestador]

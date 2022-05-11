@@ -105,8 +105,3 @@ dmypy.json
 
 # Custom
 *.sqlite3
-<<<<<<< HEAD
-migrations/
-=======
-migrations/
->>>>>>> develop

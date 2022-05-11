@@ -8,9 +8,11 @@ from agenda.views import (
     FinalizaAgendamentoDetail,
     HorarioList,
     PrestadorList,
+    healthcheck,
 )
 
 urlpatterns = [
+    path("", healthcheck),
     path("agendamentos/", AgendamentoList.as_view()),
     path("agendamentos/<uuid:uuid>/", AgendamentoDetail.as_view()),
     path(

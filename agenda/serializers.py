@@ -231,15 +231,3 @@ class EnderecoSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return Endereco.objects.create(**validated_data)
-
-    # logging.info(f'Try to find if "{prestador}" exists..')
-    # print(get_cep(cep_obj))
-
-    # {
-    #     "cep": "09070250",
-    #     "state": "SP",
-    #     "city": "Santo André",
-    #     "neighborhood": "Campestre",
-    #     "street": "Rua João Ribeiro",
-    #     "service": "correios",
-    # }

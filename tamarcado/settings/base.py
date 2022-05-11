@@ -1,19 +1,23 @@
+import os
+from datetime import datetime
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = (
-    "django-insecure-#+(q%qdbsc%2ie65$_2k@rds=4kj8fn!u9d!7ly26t7^vi+rqf"
-)
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DJANGO_DEBUG")
 
 ALLOWED_HOSTS = []
 
@@ -27,6 +31,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
     "agenda",
 ]
 
@@ -59,7 +64,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "tamarcado.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
@@ -112,3 +116,45 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+TESTING = os.environ.get("TESTING", "False")
+
+
+directory = "logs"
+parent_dir = BASE_DIR
+path = os.path.join(parent_dir, directory)
+
+try:
+    os.mkdir(path)
+except OSError:
+    pass
+today = datetime.now()
+log_name = today.strftime("%Y%m%d")
+
+LOGGING = {  # DictConfig schema: https://docs.python.org/3/library/logging.config.html#configuration-dictionary-schema
+    "version": 1,  # Versão do schema atual
+    "disable_existing_loggers": False,  # Django possui alguns loggers por padrão (request, ORM, etc.)
+    "formatters": {  # Como o conteúdo do log deve ser exibido/escrito
+        "console": {
+            "format": "%(name)-12s %(levelname)-8s %(message)s"  # -<número>s : espaçamento
+        },
+        "file": {
+            "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+        },
+    },
+    "handlers": {  # Classes que sabem manipular o log – console (stdout)/arquivo de texto
+        "console": {"class": "logging.StreamHandler", "formatter": "console"},
+        "file": {
+            "class": "logging.FileHandler",
+            "formatter": "file",
+            "filename": f"logs\\{log_name}.log",  # Onde o arquivo de log vai ser salvo
+        },
+    },
+    "loggers": {
+        "": {  # '' representa o logger "raíz" (root). Todos "loggers" herdarão dele.
+            "level": "WARN",
+            "handlers": ["console", "file"],
+        }
+    },
+}

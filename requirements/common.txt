@@ -1,0 +1,5 @@
+Django==4.0.2
+djangorestframework==3.13.1
+phonenumbers==8.12.46
+python-dotenv==0.20.0
+requests==2.27.1

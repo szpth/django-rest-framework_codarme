@@ -1,102 +1,223 @@
-from datetime import datetime, timedelta
+import logging
+from datetime import datetime
 
+from django.contrib.auth.models import User
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
-from rest_framework.decorators import api_view
+from rest_framework import generics, permissions, serializers
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from agenda.models import Agendamento
-from agenda.serializers import AgendamentoSerializer
+from agenda.models.agenda import Agendamento
+from agenda.models.loyalty import Loyalty
+from agenda.models.prestador import Endereco
+from agenda.serializers import (
+    AgendamentoSerializer,
+    EnderecoSerializer,
+    PrestadorSerializer,
+)
+from agenda.utils import get_hr_disp
 
 
-@api_view(http_method_names=["GET", "PATCH", "DELETE"])
-def agendamento_detail(request, uuid):
-    obj = get_object_or_404(Agendamento, uuid=uuid)
-    if request.method == "GET":
-        serializer = AgendamentoSerializer(obj)
-        return JsonResponse(serializer.data)
+class IsOwnerOrCreateOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == "POST":
+            return True
+        username = request.query_params.get("username", None)
+        if request.user.username == username:
+            return True
+        return False
 
-    if request.method == "PATCH":
-        serializer = AgendamentoSerializer(
-            obj, data=request.data, partial=True
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=201)
-        return JsonResponse(serializer.errors, status=400)
 
-    if request.method == "DELETE":
-        obj.cancelado = True
-        obj.save()
+class IsReadOnlyAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == "GET":
+            return True
+        return False
+
+
+class IsPrestador(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if obj.prestador == request.user:
+            return True
+        return False
+
+
+class IsAdminUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == "GET":
+            if request.user.is_staff:
+                return True
+        return False
+
+
+class AgendamentoList(generics.ListCreateAPIView):
+    serializer_class = AgendamentoSerializer
+    permission_classes = [IsOwnerOrCreateOnly]
+
+    def get_queryset(self):
+        confirmado = self.request.query_params.get("confirmado", None)
+        prestador = self.request.query_params.get("username", None)
+        if confirmado == "True" or confirmado == "true":
+            qs_user = Agendamento.objects.filter(
+                prestador__username=prestador,
+                status="CO",
+            ).order_by(
+                "data_horario",
+            )
+        elif confirmado == "False" or confirmado == "false":
+            qs_user = Agendamento.objects.filter(
+                prestador__username=prestador,
+                status="CA",
+            ).order_by(
+                "data_horario",
+            )
+        else:
+            qs_user = (
+                Agendamento.objects.filter(
+                    prestador__username=prestador,
+                )
+                .exclude(
+                    status="CA",
+                )
+                .order_by(
+                    "data_horario",
+                )
+            )
+        return qs_user
+
+
+class AgendamentoDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = AgendamentoSerializer
+    permission_classes = [IsPrestador]
+    lookup_field = "uuid"
+    queryset = Agendamento.objects.all()
+
+    def perform_destroy(self, instance):
+        if instance.status == "CA":
+            raise serializers.ValidationError(
+                {
+                    "detail": "Agendamento já foi cancelado!",
+                }
+            )
+        elif instance.status == "EX":
+            raise serializers.ValidationError(
+                {
+                    "detail": "Agendamento já foi finalizado!",
+                }
+            )
+        else:
+            instance.status = "CA"
+            instance.save()
         return Response(status=204)
 
 
-@api_view(http_method_names=["GET", "POST"])
-def agendamento_list(request):
-    if request.method == "GET":
-        qs = Agendamento.objects.filter(cancelado=False)
-        serializer = AgendamentoSerializer(qs, many=True)
-        return JsonResponse(serializer.data, safe=False)
+class ConfirmaAgendamentoDetail(generics.RetrieveAPIView):
+    serializer_class = AgendamentoSerializer
+    permission_classes = [IsPrestador]
+    lookup_field = "uuid"
 
-    if request.method == "POST":
-        data = request.data
-        serializer = AgendamentoSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=201)
-        return JsonResponse(serializer.errors, status=400)
-
-
-@api_view(http_method_names=["GET"])
-def horario_list(request):
-    if request.method == "GET":
-        data = request.query_params.get("data")
-        data = datetime.fromisoformat(data).date()
-        dt_tz = datetime(data.year, data.month, data.day, tzinfo=timezone.utc)
-        filter = list(
-            Agendamento.objects.filter(data_horario__date=dt_tz).filter(
-                cancelado=False
-            )
+    def post(self, request, uuid):
+        _qs = Agendamento.objects.get(
+            uuid=uuid,
         )
 
-        horarios = []
-
-        if dt_tz.weekday() == 6:
-            return JsonResponse(
-                {"response": "Não é possível agendar no domingo!"}, status=400
-            )
-
-        dt_hr_ini = datetime(
-            data.year, data.month, data.day, hour=9, tzinfo=timezone.utc
+        _obj = Agendamento.objects.filter(
+            data_horario=_qs.data_horario,
+            prestador=_qs.prestador,
+            status="CO",
         )
 
-        if dt_tz.weekday() == 5:
-            dt_hr_fim = datetime(
-                data.year, data.month, data.day, hour=13, tzinfo=timezone.utc
+        if _obj.exists():
+            raise serializers.ValidationError(
+                "Agendamento confirmado já existente para este horário!"
+            )
+        elif _qs.status == "CA":
+            raise serializers.ValidationError(
+                "Este agendamento já está cancelado!"
+            )
+        elif _qs.status == "CO":
+            raise serializers.ValidationError(
+                "Este agendamento já está confirmado!"
             )
         else:
-            dt_hr_fim = datetime(
-                data.year, data.month, data.day, hour=18, tzinfo=timezone.utc
-            )
-            int_ini = datetime(
-                data.year, data.month, data.day, hour=12, tzinfo=timezone.utc
-            )
-            int_fim = datetime(
-                data.year, data.month, data.day, hour=13, tzinfo=timezone.utc
-            )
-        delta = timedelta(minutes=30)
+            _qs.status = "CO"
+            _qs.save()
 
-        agendados = [x.data_horario for x in filter]
+        return Response(status=202)
 
-        while dt_hr_ini < dt_hr_fim:
-            if dt_tz.weekday() == 5:
-                if dt_hr_ini not in agendados:
-                    horarios.append(dt_hr_ini.isoformat())
-            else:
-                if (dt_hr_ini not in agendados) and (
-                    dt_hr_ini < int_ini or dt_hr_ini >= int_fim
-                ):
-                    horarios.append(dt_hr_ini.isoformat())
-            dt_hr_ini += delta
-        return JsonResponse(horarios, safe=False)
+
+class FinalizaAgendamentoDetail(generics.UpdateAPIView):
+    serializer_class = AgendamentoSerializer
+    permission_classes = [IsPrestador]
+    lookup_field = "uuid"
+
+    def post(self, request, uuid):
+        _qs = Agendamento.objects.get(
+            uuid=uuid,
+        )
+
+        _obj = Loyalty.objects.filter(
+            email_cliente=_qs.email_cliente,
+            prestador=_qs.prestador,
+        )
+
+        if _qs.status == "EX":
+            raise serializers.ValidationError(
+                {
+                    "detail": "Agendamento já foi finalizado!",
+                }
+            )
+        elif _qs.status == "CA":
+            raise serializers.ValidationError(
+                {
+                    "detail": "Agendamento está cancelado!",
+                },
+            )
+        elif _qs.status == "NC":
+            raise serializers.ValidationError(
+                {
+                    "detail": "Agendamento ainda não foi confirmado!",
+                }
+            )
+        else:
+            if _qs.status == "CO":
+                _qs.status = "EX"
+                _qs.save()
+                if _obj.exists():
+                    _obj = _obj[0]
+                    _obj.pontos += 1
+                    _obj.save()
+                else:
+                    Loyalty.objects.create(
+                        email_cliente=_qs.email_cliente,
+                        prestador=_qs.prestador,
+                    )
+
+        return Response(status=202)
+
+
+class HorarioList(APIView):
+    permission_classes = [IsReadOnlyAccess]
+
+    def get(self, request):
+        data = request.query_params.get("data")
+        if not data:
+            data = datetime.now().date()
+        else:
+            data = datetime.fromisoformat(data).date()
+        hr_disp = sorted(list(get_hr_disp(data)))
+        return JsonResponse(data=hr_disp, safe=False)
+
+
+class PrestadorList(generics.ListAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = PrestadorSerializer
+
+    def get_queryset(self):
+        qs_prestador = User.objects.all()
+        return qs_prestador
+
+
+class EnderecoDetail(generics.CreateAPIView):
+    serializer_class = EnderecoSerializer
+    permission_classes = [IsPrestador]

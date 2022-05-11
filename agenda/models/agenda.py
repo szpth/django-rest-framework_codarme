@@ -1,40 +1,53 @@
-from uuid import uuid4
-
 import phonenumbers
 from django.db import models
 
-
-class StandardModelMixin(models.Model):
-    uuid = models.UUIDField(
-        primary_key=True, default=uuid4, editable=False, verbose_name="ID"
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True, editable=False, verbose_name="Created at"
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True, editable=False, verbose_name="Updated at"
-    )
-
-    class Meta:
-        abstract = True
+from agenda.models.base import StandardModelMixin
 
 
 class Agendamento(StandardModelMixin):
+    NAOCONFIRMADO = "NC"
+    CONFIRMADO = "CO"
+    EXECUTADO = "EX"
+    CANCELADO = "CA"
+    ESTADOS = [
+        (NAOCONFIRMADO, "Não Confirmado"),
+        (CONFIRMADO, "Confirmado"),
+        (EXECUTADO, "Executado"),
+        (CANCELADO, "Cancelado"),
+    ]
+
+    prestador = models.ForeignKey(
+        "auth.User",
+        related_name="agendamentos",
+        on_delete=models.CASCADE,
+        verbose_name="Prestador",
+    )
     data_horario = models.DateTimeField(verbose_name="Horário do agendamento")
     nome_cliente = models.CharField(
         max_length=255, verbose_name="Nome do cliente"
     )
     email_cliente = models.EmailField(verbose_name="E-Mail")
     telefone_cliente = models.CharField(max_length=20, verbose_name="Telefone")
-    cancelado = models.BooleanField(default=False, verbose_name="Cancelado")
+    status = models.CharField(
+        max_length=2,
+        choices=ESTADOS,
+        default=NAOCONFIRMADO,
+        verbose_name="Status",
+    )
 
     @classmethod
     def to_e164(cls, telefone_cliente):
+<<<<<<< HEAD:agenda/models.py
         """
         phonenumbers Python Library \n
         Enconding phone to E.164 format \n
         Reference: https://github.com/daviddrysdale/python-phonenumbers
         """
+=======
+        """phonenumbers Python Library \n
+        Encoding phone to E.164 format \n
+        Reference: https://github.com/daviddrysdale/python-phonenumbers"""
+>>>>>>> develop:agenda/models/agenda.py
         telefone_cliente = phonenumbers.parse(telefone_cliente, "BR")
         format_telefone_cliente = phonenumbers.format_number(
             telefone_cliente, phonenumbers.PhoneNumberFormat.E164

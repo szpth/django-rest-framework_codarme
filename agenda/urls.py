@@ -1,5 +1,8 @@
 from django.urls import include, path
+from rest_framework.views import APIView
 
+from agenda.models.prestador import Endereco
+from agenda.serializers import EnderecoSerializer
 from agenda.views import (
     AgendamentoDetail,
     AgendamentoList,
@@ -11,6 +14,7 @@ from agenda.views import (
 )
 
 urlpatterns = [
+    path("api-auth/", include("rest_framework.urls")),
     path("agendamentos/", AgendamentoList.as_view()),
     path("agendamentos/<uuid:uuid>/", AgendamentoDetail.as_view()),
     path(

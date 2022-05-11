@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 
 from django.contrib.auth.models import User

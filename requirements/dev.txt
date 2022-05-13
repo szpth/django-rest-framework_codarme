@@ -4,4 +4,4 @@ flake8==4.0.1
 isort==5.10.1
 pytest-cov==3.0.0
 pytest-django==4.5.2
-ipython==ipython-8.3.0
+ipython==8.3.0

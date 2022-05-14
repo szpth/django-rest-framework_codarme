@@ -1,0 +1,8 @@
+[flake8]
+extend-ignore = E501  # Ignora max-line
+exclude=
+    .git,
+    __pycache__,
+    */migrations/**,
+    tamarcado/settings*,
+max-complexity = 10

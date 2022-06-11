@@ -7,11 +7,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
 # Logs file
 logs/
 

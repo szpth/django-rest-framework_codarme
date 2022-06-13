@@ -7,7 +7,7 @@ from agenda.views import (
     EnderecoDetail,
     FinalizaAgendamentoDetail,
     HorarioList,
-    PrestadorList,
+    relatorio_prestadores,
     healthcheck,
 )
 
@@ -24,6 +24,6 @@ urlpatterns = [
         FinalizaAgendamentoDetail.as_view(),
     ),
     path("horarios/", HorarioList.as_view()),
-    path("prestadores/", PrestadorList.as_view()),
+    path("prestadores/", relatorio_prestadores),
     path("prestadores/endereco/", EnderecoDetail.as_view()),
 ]

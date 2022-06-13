@@ -3,7 +3,7 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from rest_framework import generics, permissions, serializers
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -14,6 +14,7 @@ from agenda.serializers import (
     EnderecoSerializer,
     PrestadorSerializer,
 )
+from agenda.tasks import gera_relatorio_prestadores
 from agenda.utils import get_hr_disp
 
 
@@ -208,18 +209,22 @@ class HorarioList(APIView):
         return JsonResponse(data=hr_disp, safe=False)
 
 
-class PrestadorList(generics.ListAPIView):
-    permission_classes = [IsAdminUser]
-    serializer_class = PrestadorSerializer
-
-    def get_queryset(self):
-        qs_prestador = User.objects.all()
-        return qs_prestador
-
-
 class EnderecoDetail(generics.CreateAPIView):
     serializer_class = EnderecoSerializer
     permission_classes = [IsPrestador]
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes([permissions.IsAdminUser])
+def relatorio_prestadores(request):
+    formato = request.query_params.get("formato")
+    if formato == "csv":
+        result = gera_relatorio_prestadores.delay()
+        return Response({"task_id": result.task_id})
+    else:
+        prestadores = User.objects.all()
+        serializer = PrestadorSerializer(prestadores, many=True)
+        return Response(serializer.data)
 
 
 @api_view(http_method_names=["GET"])

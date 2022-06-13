@@ -132,29 +132,41 @@ except OSError:
 today = datetime.now()
 log_name = today.strftime("%Y%m%d")
 
-LOGGING = {  # DictConfig schema: https://docs.python.org/3/library/logging.config.html#configuration-dictionary-schema
+LOGGING = {
     "version": 1,  # Versão do schema atual
-    "disable_existing_loggers": False,  # Django possui alguns loggers por padrão (request, ORM, etc.)
-    "formatters": {  # Como o conteúdo do log deve ser exibido/escrito
-        "console": {
-            "format": "%(name)-12s %(levelname)-8s %(message)s"  # -<número>s : espaçamento
-        },
+    "disable_existing_loggers": False,
+    "formatters": {
+        "console": {"format": "%(name)-12s %(levelname)-8s %(message)s"},
         "file": {
             "format": "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
         },
     },
-    "handlers": {  # Classes que sabem manipular o log – console (stdout)/arquivo de texto
+    "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "console"},
         "file": {
             "class": "logging.FileHandler",
             "formatter": "file",
-            "filename": f"logs\\{log_name}.log",  # Onde o arquivo de log vai ser salvo
+            "filename": f"logs\\{log_name}.log",
         },
     },
     "loggers": {
-        "": {  # '' representa o logger "raíz" (root). Todos "loggers" herdarão dele.
+        "": {
             "level": "WARN",
-            "handlers": ["console", "file"],
+            "handlers": [
+                "console",
+                "file",
+            ],
         }
     },
 }
+
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "0.0.0.0")
+EMAIL_PORT = os.environ.get("EMAIL_PORT", 1025)
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+
+CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "redis://localhost:6379/0")

@@ -9,7 +9,6 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -20,7 +19,6 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = os.environ.get("DJANGO_DEBUG", False)
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -75,7 +73,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
@@ -94,7 +91,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -106,7 +102,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 STATIC_URL = "/static/"
@@ -117,9 +112,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
 TESTING = os.environ.get("TESTING", "False")
-
 
 directory = "logs"
 parent_dir = BASE_DIR
@@ -146,12 +139,12 @@ LOGGING = {
         "file": {
             "class": "logging.FileHandler",
             "formatter": "file",
-            "filename": f"logs\\{log_name}.log",
+            "filename": f"logs/{log_name}.log",
         },
     },
     "loggers": {
         "": {
-            "level": "WARN",
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "WARN"),
             "handlers": [
                 "console",
                 "file",
